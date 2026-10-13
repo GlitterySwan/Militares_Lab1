@@ -8,7 +8,7 @@ Adding or amending a policy never requires changing Python.
 ```bash
 pip install -r requirements.txt
 pytest -q                          # unit tests
-uvicorn app.main:app --reload      # API at http://127.0.0.1:8000/docs
+uvicorn app.main:app --reload      # API at http://127.0.0.1:8000/
 curl -X POST localhost:8000/validate -H "Content-Type: application/json" -d @sample_request.json
 ```
 
