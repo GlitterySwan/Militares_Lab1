@@ -1,0 +1,29 @@
+{
+  "id": "low_sodium",
+  "name": "Low-Sodium Hospital Diet (2,000 mg)",
+  "version": "1.0",
+  "description": "Illustrative institutional low-sodium policy for cardiac / hypertension / heart-failure patients. Verify thresholds against your institution's current diet manual.",
+  "rules": [
+    {"id": "NA-DAY-MAX", "title": "Daily sodium must not exceed 2,000 mg", "scope": "day",
+     "type": "nutrient_max", "nutrient": "sodium_mg", "max": 2000, "severity": "error",
+     "source": "WHO sodium guideline (<2,000 mg/day); AHA/DGA ceiling of 2,300 mg/day",
+     "remedy": "Swap processed or canned items for fresh or unsalted alternatives."},
+    {"id": "NA-MEAL-MAX", "title": "Main meals should not exceed 800 mg sodium", "scope": "meal",
+     "type": "nutrient_max", "nutrient": "sodium_mg", "max": 800, "meal_types": ["breakfast", "lunch", "dinner"],
+     "severity": "warning",
+     "source": "Institutional practice: distribute sodium across meals",
+     "remedy": "Rebalance sodium-rich foods across meals."},
+    {"id": "NA-ITEM-PROC", "title": "No processed/cured meats", "scope": "item",
+     "type": "tag_forbidden", "tags": ["processed_meat"], "severity": "error",
+     "source": "Low-sodium diet: avoid cured, smoked and deli meats",
+     "remedy": "Use fresh-roasted chicken, fish, or eggs instead."},
+    {"id": "NA-ITEM-HIGHNA", "title": "Avoid canned soups and other high-sodium convenience foods", "scope": "item",
+     "type": "tag_forbidden", "tags": ["high_sodium"], "severity": "warning",
+     "source": "Low-sodium diet: limit canned and prepared foods",
+     "remedy": "Offer homemade/no-salt-added versions."},
+    {"id": "NA-VEG-MIN", "title": "At least 200 g vegetables per day", "scope": "day",
+     "type": "tag_min_grams", "tags": ["vegetable"], "min": 200, "severity": "warning",
+     "source": "DASH-style pattern: vegetables support potassium intake and BP control",
+     "remedy": "Add a vegetable side to lunch or dinner."}
+  ]
+}

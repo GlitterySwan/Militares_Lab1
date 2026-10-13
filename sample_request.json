@@ -1,0 +1,15 @@
+{
+  "policy_ids": ["low_sodium", "diabetic"],
+  "plan": {
+    "patient_ref": "bed-12",
+    "days": [{
+      "label": "Day 1",
+      "meals": [
+        {"type": "breakfast", "items": [{"food_id": "bacon", "grams": 60}, {"food_id": "white_bread", "grams": 100}, {"food_id": "orange_juice", "grams": 250}]},
+        {"type": "lunch", "items": [{"food_id": "canned_soup", "grams": 350}, {"food_id": "white_rice", "grams": 250}]},
+        {"type": "dinner", "items": [{"food_id": "salmon_baked", "grams": 130}, {"food_id": "brown_rice", "grams": 180}, {"food_id": "broccoli_steamed", "grams": 150}]},
+        {"type": "snack", "items": [{"food_id": "chocolate_cake", "grams": 80}]}
+      ]
+    }]
+  }
+}

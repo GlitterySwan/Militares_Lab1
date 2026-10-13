@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diet Policy Checker</title>
+<style>
+/* ===== 1. COLOURS (change the look of the whole app here) ===== */
+:root {
+  --page-bg: #cff2d7;  --card-bg: #ffffff;  --input-bg: #ffffff;
+  --text: #111827;     --text-muted: #4b5563;  --border: #d1d5db;
+  --accent: #4f5bd5;   --accent-soft: #eef0ff;
+  --success: #166534;  --success-bg: #dcfce7;
+  --danger: #b91c1c;   --danger-bg: #fef2f2;
+  --warning: #92400e;  --warning-bg: #fffbeb;
+}
+:root.dark {
+  --page-bg: #0e1320;  --card-bg: #161c2c;  --input-bg: #0e1320;
+  --text: #e8ecf5;     --text-muted: #a3aec2;  --border: #2f3a52;
+  --accent: #8b95f7;   --accent-soft: #232a4d;
+  --success: #4ade80;  --success-bg: #12301e;
+  --danger: #f87171;   --danger-bg: #3a1717;
+  --warning: #fbbf24;  --warning-bg: #35290c;
+}
+
+/* ===== 2. BASE ===== */
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page-bg); color: var(--text); font: 15px/1.5 system-ui, "Segoe UI", sans-serif; }
+h1 { font-size: 24px; margin: 0; }
+h2 { font-size: 16px; margin: 0; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }   /* visible keyboard focus */
+[hidden] { display: none !important; }
+
+/* ===== 3. LAYOUT ===== */
+.app-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: var(--card-bg); border-bottom: 1px solid var(--border); font-weight: 600; }
+.brand { display: flex; align-items: center; gap: 10px; }
+.page { max-width: 1120px; margin: 0 auto; padding: 24px 20px; }
+.page-intro { color: var(--text); margin: 4px 0 20px; }
+.layout { display: grid; grid-template-columns: 380px 1fr; gap: 20px; align-items: start; }
+@media (max-width: 860px) { .layout { grid-template-columns: 1fr; } }
+
+/* ===== 4. CARDS ===== */
+.card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+.card-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.card-title { display: flex; align-items: center; gap: 8px; }
+.step-number { width: 22px; height: 22px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font-size: 13px; font-weight: 700; display: grid; place-items: center; }
+.hint { color: var(--text-muted); font-size: 13px; margin: 8px 0 0; }
+
+/* ===== 5. FORM CONTROLS ===== */
+.field-label { display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
+.text-input, .select { font: inherit; color: var(--text); background: var(--input-bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; }
+.text-input { width: 100%; margin-bottom: 14px; }
+.button { font: inherit; font-size: 13px; color: var(--text); background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+.button:hover { background: var(--accent-soft); }
+.primary-button { width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; font: inherit; font-weight: 600; color: #fff; background: var(--accent); border: 0; border-radius: 10px; padding: 12px; cursor: pointer; }
+.primary-button:disabled { opacity: .5; cursor: not-allowed; }
+.icon-button { background: none; border: 0; color: var(--text-muted); cursor: pointer; padding: 6px; border-radius: 6px; display: grid; place-items: center; }
+.icon-button:hover { background: var(--accent-soft); color: var(--accent); }
+
+/* ===== 6. POLICY LIST ===== */
+.policy-option { display: flex; align-items: center; gap: 10px; border: 1px solid var(--border); border-radius: 10px; padding: 10px; margin-bottom: 8px; cursor: pointer; }
+.policy-option:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+.policy-option.disabled { opacity: .6; cursor: not-allowed; }
+.policy-option input { width: 18px; height: 18px; accent-color: var(--accent); }
+.policy-name { font-weight: 600; display: block; }
+.policy-summary { font-size: 13px; color: var(--text-muted); display: block; }
+
+/* ===== 7. MEAL BUILDER ===== */
+.meal { border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 12px; }
+.meal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-weight: 700; text-transform: capitalize; }
+.meal-calories { font-weight: 400; font-size: 13px; color: var(--text-muted); margin-left: 6px; }
+.color-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; }
+.item-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.food-select { flex: 1; min-width: 0; }
+.grams-input { width: 80px; text-align: center; margin: 0; }
+.unit { color: var(--text-muted); font-size: 13px; }
+.link-button { background: none; border: 0; padding: 4px 0; font: inherit; font-size: 13px; font-weight: 600; color: var(--accent); cursor: pointer; }
+.add-meal-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 14px 0; }
+
+/* ===== 8. RESULTS ===== */
+.empty-state { text-align: center; padding: 60px 24px; color: var(--text-muted); }
+.empty-state h2 { color: var(--text); margin-bottom: 6px; }
+.banner { padding: 14px 16px; border-radius: 10px; font-weight: 700; font-size: 17px; margin-bottom: 16px; }
+.banner.pass, .badge.pass { background: var(--success-bg); color: var(--success); }
+.banner.fail, .badge.fail { background: var(--danger-bg); color: var(--danger); }
+.badge { font-size: 13px; font-weight: 700; padding: 3px 10px; border-radius: 99px; }
+.score-bar { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; margin: 6px 0 12px; }
+.score-bar > div { height: 100%; background: var(--accent); }
+.issue { border-left: 4px solid; border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; }
+.issue.error   { border-color: var(--danger);  background: var(--danger-bg); }
+.issue.warning { border-color: var(--warning); background: var(--warning-bg); }
+.issue-title { font-weight: 700; }
+.issue p { margin: 2px 0; }
+.issue summary { cursor: pointer; font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+.group-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--text-muted); margin: 14px 0 6px; }
+.totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; }
+.total-box { background: var(--accent-soft); border-radius: 8px; padding: 8px; text-align: center; font-size: 13px; color: var(--text-muted); }
+.total-box strong { display: block; font-size: 18px; color: var(--text); }
+.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1f2937; color: #fff; padding: 10px 16px; border-radius: 10px; display: flex; gap: 14px; align-items: center; }
+.toast button { background: none; border: 0; color: #a5b4fc; font: inherit; font-weight: 700; cursor: pointer; }
+</style>
+</head>
+
+<body>
+<header class="app-header">
+  <div class="brand"><span id="logo"></span> Diet Policy Checker</div>
+  <button class="icon-button" data-action="toggle-theme" aria-label="Switch between dark and light mode" title="Switch between dark and light mode" id="theme-button"></button>
+</header>
+
+<main class="page">
+  <h1>Compliance Dashboard</h1>
+  <p class="page-intro">Check a patient's meal plan against clinical diet policies in 3 steps: choose policies, build the plan, then analyze.</p>
+
+  <div class="layout">
+    <div>
+      <section class="card" aria-labelledby="step1">
+        <h2 id="step1" class="card-title" style="margin-bottom:12px"><span class="step-number">1</span> Choose policies</h2>
+        <div id="policy-list">Loading policies…</div>
+      </section>
+
+      <section class="card" aria-labelledby="step2">
+        <div class="card-header">
+          <h2 id="step2" class="card-title"><span class="step-number">2</span> Build meal plan</h2>
+          <div>
+            <button class="button" data-action="load-example" title="Fill in an example day">Load example</button>
+            <button class="button" data-action="clear-meals" title="Remove all meals (you can undo)">Clear all</button>
+          </div>
+        </div>
+        <label class="field-label" for="patient-id">Patient or bed ID</label>
+        <input id="patient-id" class="text-input" value="PT-4421 · Bed 12">
+
+        <div id="meal-list"></div>
+
+        <div class="add-meal-row" role="group" aria-label="Add a meal">
+          <button class="button" data-action="add-meal" data-meal-type="breakfast">+ Breakfast</button>
+          <button class="button" data-action="add-meal" data-meal-type="lunch">+ Lunch</button>
+          <button class="button" data-action="add-meal" data-meal-type="dinner">+ Dinner</button>
+          <button class="button" data-action="add-meal" data-meal-type="snack">+ Snack</button>
+        </div>
+
+        <button id="analyze-button" class="primary-button" data-action="analyze"></button>
+        <p id="analyze-hint" class="hint" aria-live="polite"></p>
+      </section>
+    </div>
+
+    <section id="results" aria-live="polite">
+      <div class="card empty-state">
+        <h2>Ready for analysis</h2>
+        <p>Your compliance report will appear here after you choose policies, build a meal plan, and press Analyze.</p>
+      </div>
+    </section>
+  </div>
+</main>
+
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script>
+/* =====================================================================
+   1. SETTINGS: things you may want to edit
+   ===================================================================== */
+const POLICY_INFO = {
+  low_sodium:  { name: "Low Sodium",        summary: "Sodium under 2,000 mg per day",    icon: "drop"  },
+  cardiac:     { name: "Cardiac Diet",      summary: "Saturated fat under 7% of calories", icon: "heart" },
+  diabetic:    { name: "Diabetic-Friendly", summary: "Controlled carbs and sugar",       icon: "pulse" },
+  gluten_free: { name: "Gluten-Free",       summary: "No wheat, barley or rye",          icon: "wheat" },
+};
+const POLICIES_CHECKED_AT_START = ["low_sodium", "cardiac"];
+const MEAL_COLORS = { breakfast: "#f59e0b", lunch: "#4f5bd5", dinner: "#8b5cf6", snack: "#10b981" };
+const NUTRIENTS_SHOWN = [
+  ["kcal", "Calories (kcal)"], ["carbs_g", "Carbs (g)"], ["sugar_g", "Sugar (g)"], ["fiber_g", "Fibre (g)"],
+  ["protein_g", "Protein (g)"], ["fat_g", "Fat (g)"], ["sat_fat_g", "Sat. fat (g)"], ["sodium_mg", "Sodium (mg)"],
+];
+const EXAMPLE_MEALS = [
+  { type: "breakfast", items: [{ foodId: "oatmeal_cooked", grams: 250 }, { foodId: "banana", grams: 100 }] },
+  { type: "lunch",     items: [{ foodId: "chicken_breast", grams: 120 }, { foodId: "white_rice", grams: 200 }, { foodId: "broccoli_steamed", grams: 100 }] },
+  { type: "dinner",    items: [{ foodId: "salmon_baked", grams: 130 }, { foodId: "brown_rice", grams: 180 }, { foodId: "broccoli_steamed", grams: 150 }] },
+  { type: "snack",     items: [{ foodId: "apple", grams: 150 }] },
+];
+const MAX_GRAMS = 2000;
+
+/* =====================================================================
+   2. APP STATE: everything the screen is built from
+   ===================================================================== */
+let foods = [];              // loaded from GET /foods
+let policies = [];           // loaded from GET /policies
+let meals = [];              // [{ type: "lunch", items: [{ foodId, grams }] }]
+let mealsBeforeClear = null; // lets the user undo "Clear all"
+let isAnalyzing = false;
+let toastTimer = null;
+
+/* =====================================================================
+   3. SMALL HELPERS
+   ===================================================================== */
+const $ = (id) => document.getElementById(id);
+
+function escapeHtml(text) {
+  return String(text).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+
+const ICON_PATHS = {
+  drop:  "M12 2.7l5.7 5.6a8 8 0 11-11.4 0z",
+  heart: "M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 00-7.8 7.8l1 1.1L12 21.2l7.8-7.7 1-1.1a5.5 5.5 0 000-7.8z",
+  pulse: "M22 12h-4l-3 9L9 3l-3 9H2",
+  wheat: "M12 2v20M8 6l4 3 4-3M8 12l4 3 4-3M8 18l4 3 4-3",
+  ring:  "M12 3a9 9 0 100 18 9 9 0 000-18z",
+  moon:  "M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z",
+  trash: "M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6",
+  fork:  "M7 2v8a3 3 0 006 0V2M10 2v20M18 2c-2 2-3 5-3 8h3v12",
+  check: "M9 11l3 3 8-8M20 12v7a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2h9",
+};
+function icon(name, size = 18) {
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${ICON_PATHS[name]}"/></svg>`;
+}
+
+function createMeal(type) { return { type, items: [{ foodId: foods[0].id, grams: 100 }] }; }
+function copyMeals(list) { return list.map((m) => ({ type: m.type, items: m.items.map((i) => ({ ...i })) })); }
+
+function mealCalories(meal) {
+  const total = meal.items.reduce((sum, item) => {
+    const food = foods.find((f) => f.id === item.foodId);
+    return sum + (food ? (food.kcal * item.grams) / 100 : 0);
+  }, 0);
+  return Math.round(total);
+}
+
+function showToast(message, undoAction) {
+  const toast = $("toast");
+  toast.innerHTML = `<span>${escapeHtml(message)}</span>` + (undoAction ? `<button data-action="${undoAction}">Undo</button>` : "");
+  toast.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toast.hidden = true; }, 7000);
+}
+
+/* =====================================================================
+   4. ERROR PREVENTION: the Analyze button explains why it is disabled
+   ===================================================================== */
+function getSelectedPolicyIds() {
+  return [...document.querySelectorAll(".policy-checkbox:checked")].map((box) => box.value);
+}
+
+function getProblems() {
+  const problems = [];
+  if (getSelectedPolicyIds().length === 0) problems.push("Select at least one policy in step 1.");
+  if (meals.length === 0) problems.push("Add at least one meal in step 2.");
+  meals.forEach((meal) => { if (meal.items.length === 0) problems.push(`Add a food to ${meal.type}, or remove that meal.`); });
+  if (meals.some((m) => m.items.some((i) => !(i.grams >= 1 && i.grams <= MAX_GRAMS)))) {
+    problems.push(`Enter an amount between 1 and ${MAX_GRAMS} g for every food.`);
+  }
+  return problems;
+}
+
+function updateAnalyzeButton() {
+  const problems = getProblems();
+  const button = $("analyze-button");
+  button.disabled = problems.length > 0 || isAnalyzing;
+  button.innerHTML = isAnalyzing ? "Analyzing…" : `${icon("check")} Analyze compliance`;
+  $("analyze-hint").textContent = problems[0] || "Ready. Shortcut: Ctrl + Enter.";
+}
+
+/* =====================================================================
+   5. DRAWING THE SCREEN
+   ===================================================================== */
+function renderPolicies() {
+  const knownIds = Object.keys(POLICY_INFO).filter((id) => policies.some((p) => p.id === id));
+  const otherIds = policies.map((p) => p.id).filter((id) => !POLICY_INFO[id]);
+  const rows = [...knownIds, ...otherIds].map((id) => {
+    const info = POLICY_INFO[id] || { name: policies.find((p) => p.id === id).name, summary: "Custom policy", icon: "ring" };
+    const checked = POLICIES_CHECKED_AT_START.includes(id) ? "checked" : "";
+    return `<label class="policy-option">
+      <input type="checkbox" class="policy-checkbox" value="${escapeHtml(id)}" ${checked}>
+      ${icon(info.icon)}
+      <span><span class="policy-name">${escapeHtml(info.name)}</span><span class="policy-summary">${escapeHtml(info.summary)}</span></span>
+    </label>`;
+  });
+  rows.push(`<label class="policy-option disabled">
+      <input type="checkbox" disabled> ${icon("ring")}
+      <span><span class="policy-name">Renal Support</span><span class="policy-summary">Coming soon: needs potassium and phosphorus data</span></span>
+    </label>`);
+  $("policy-list").innerHTML = rows.join("");
+}
+
+function renderMeals() {
+  $("meal-list").innerHTML = meals.map((meal, m) => `
+    <div class="meal">
+      <div class="meal-header">
+        <span><span class="color-dot" style="background:${MEAL_COLORS[meal.type]}"></span>${meal.type}
+          <span class="meal-calories" id="calories-${m}">≈ ${mealCalories(meal)} kcal</span></span>
+        <button class="icon-button" data-action="remove-meal" data-meal-index="${m}" aria-label="Remove ${meal.type}" title="Remove this meal">${icon("trash")}</button>
+      </div>
+      ${meal.items.map((item, i) => `
+        <div class="item-row">
+          <select class="select food-select" data-meal-index="${m}" data-item-index="${i}" aria-label="Food">
+            ${foods.map((f) => `<option value="${escapeHtml(f.id)}" ${f.id === item.foodId ? "selected" : ""}>${escapeHtml(f.name)}</option>`).join("")}
+          </select>
+          <input type="number" class="text-input grams-input" data-meal-index="${m}" data-item-index="${i}" value="${item.grams}" min="1" max="${MAX_GRAMS}" aria-label="Amount in grams">
+          <span class="unit">g</span>
+          <button class="icon-button" data-action="remove-item" data-meal-index="${m}" data-item-index="${i}" aria-label="Remove this food" title="Remove this food">${icon("trash", 16)}</button>
+        </div>`).join("")}
+      <button class="link-button" data-action="add-item" data-meal-index="${m}">+ Add food</button>
+    </div>`).join("") || `<p class="hint">No meals yet. Add one below, or press “Load example”.</p>`;
+  updateAnalyzeButton();
+}
+
+function describeLimit(limit) {
+  if (limit.min != null && limit.max != null) return `between ${limit.min} and ${limit.max}`;
+  if (limit.min != null) return `at least ${limit.min}`;
+  if (limit.max != null) return `at most ${limit.max}`;
+  return "not allowed";
+}
+
+function renderIssue(issue) {
+  const problem = issue.limit.forbidden_tags
+    ? (issue.detail || "Contains a food this policy does not allow.")
+    : `Found ${issue.actual}, but the policy needs ${describeLimit(issue.limit)}.`;
+  return `<div class="issue ${issue.severity}">
+    <div class="issue-title">${escapeHtml(issue.title)}</div>
+    <p><strong>Where:</strong> ${escapeHtml(issue.location)}</p>
+    <p><strong>Problem:</strong> ${escapeHtml(problem)}</p>
+    <p><strong>How to fix:</strong> ${escapeHtml(issue.remedy)}</p>
+    <details><summary>Why this rule?</summary><p>${escapeHtml(issue.source)}</p></details>
+  </div>`;
+}
+
+function renderResults(data) {
+  const mustFixCount = data.results.reduce((n, r) => n + r.errors.length, 0);
+  const banner = data.overall_compliant
+    ? `<div class="banner pass">✔ Compliant with all selected policies</div>`
+    : `<div class="banner fail">✘ Not compliant: ${mustFixCount} issue${mustFixCount === 1 ? "" : "s"} must be fixed</div>`;
+
+  const policyCards = data.results.map((r) => `
+    <section class="card">
+      <div class="card-header">
+        <h2>${escapeHtml(r.policy_name)}</h2>
+        <span class="badge ${r.compliant ? "pass" : "fail"}">${r.compliant ? "✔ Compliant" : "✘ Not compliant"}</span>
+      </div>
+      <div>Score: <strong>${r.compliance_score}%</strong> of checks passed</div>
+      <div class="score-bar"><div style="width:${r.compliance_score}%"></div></div>
+      ${r.errors.length ? `<div class="group-title">Must fix</div>${r.errors.map(renderIssue).join("")}` : ""}
+      ${r.warnings.length ? `<div class="group-title">Should improve</div>${r.warnings.map(renderIssue).join("")}` : ""}
+      ${r.errors.length + r.warnings.length === 0 ? `<p class="hint">No issues found.</p>` : ""}
+    </section>`).join("");
+
+  const totals = data.results[0].daily_totals[0].totals;
+  const totalsCard = `<section class="card"><h2 style="margin-bottom:12px">Daily nutrition totals</h2>
+    <div class="totals">${NUTRIENTS_SHOWN.map(([key, label]) => `<div class="total-box"><strong>${totals[key]}</strong>${label}</div>`).join("")}</div></section>`;
+
+  $("results").innerHTML = banner + policyCards + totalsCard;
+  $("results").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function renderError(error) {
+  const friendly = error instanceof TypeError
+    ? "Cannot reach the server. Make sure it is running: uvicorn app.main:app --reload"
+    : error.message;
+  $("results").innerHTML = `<div class="banner fail">Something went wrong. ${escapeHtml(friendly)}</div>`;
+}
+
+/* =====================================================================
+   6. TALKING TO THE API
+   ===================================================================== */
+async function loadStartupData() {
+  try {
+    [policies, foods] = await Promise.all([
+      fetch("/policies").then((r) => r.json()),
+      fetch("/foods").then((r) => r.json()),
+    ]);
+    meals = [createMeal("breakfast"), createMeal("lunch")];
+    renderPolicies();
+    renderMeals();
+  } catch (error) {
+    $("policy-list").innerHTML = `<div class="banner fail">Cannot reach the server. Start it with: uvicorn app.main:app --reload</div>`;
+  }
+}
+
+async function analyze() {
+  if (isAnalyzing || getProblems().length > 0) return;
+  isAnalyzing = true;
+  updateAnalyzeButton();
+  $("results").innerHTML = `<div class="card empty-state"><h2>Analyzing…</h2></div>`;
+
+  const request = {
+    policy_ids: getSelectedPolicyIds(),
+    plan: {
+      patient_ref: $("patient-id").value || "anonymous",
+      days: [{ label: "Day 1", meals: meals.map((meal) => ({
+        type: meal.type,
+        items: meal.items.map((item) => ({ food_id: item.foodId, grams: item.grams })),
+      })) }],
+    },
+  };
+
+  try {
+    const response = await fetch("/validate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(request) });
+    const data = await response.json();
+    if (!response.ok) throw new Error(typeof data.detail === "string" ? data.detail : "The plan could not be checked.");
+    renderResults(data);
+  } catch (error) {
+    renderError(error);
+  } finally {
+    isAnalyzing = false;
+    updateAnalyzeButton();
+  }
+}
+
+/* =====================================================================
+   7. USER ACTIONS: one click handler, one function per action
+   ===================================================================== */
+const actions = {
+  "toggle-theme": () => document.documentElement.classList.toggle("dark"),
+  "load-example": () => { meals = copyMeals(EXAMPLE_MEALS); renderMeals(); },
+  "clear-meals":  () => {
+    if (meals.length === 0) return;
+    mealsBeforeClear = copyMeals(meals);
+    meals = [];
+    renderMeals();
+    showToast("All meals cleared.", "undo-clear");
+  },
+  "undo-clear":   () => { if (mealsBeforeClear) { meals = mealsBeforeClear; mealsBeforeClear = null; renderMeals(); $("toast").hidden = true; } },
+  "add-meal":     (el) => { meals.push(createMeal(el.dataset.mealType)); renderMeals(); },
+  "remove-meal":  (el) => { meals.splice(Number(el.dataset.mealIndex), 1); renderMeals(); },
+  "add-item":     (el) => { meals[Number(el.dataset.mealIndex)].items.push({ foodId: foods[0].id, grams: 100 }); renderMeals(); },
+  "remove-item":  (el) => { meals[Number(el.dataset.mealIndex)].items.splice(Number(el.dataset.itemIndex), 1); renderMeals(); },
+  "analyze":      () => analyze(),
+};
+
+document.addEventListener("click", (event) => {
+  const element = event.target.closest("[data-action]");
+  if (element && actions[element.dataset.action]) actions[element.dataset.action](element);
+});
+
+// Typing grams or choosing a food updates the state without redrawing (keeps your cursor in place)
+$("meal-list").addEventListener("input", (event) => {
+  const el = event.target;
+  const meal = meals[Number(el.dataset.mealIndex)];
+  if (!meal) return;
+  const item = meal.items[Number(el.dataset.itemIndex)];
+  if (el.classList.contains("grams-input")) item.grams = Number(el.value);
+  if (el.classList.contains("food-select")) item.foodId = el.value;
+  $(`calories-${el.dataset.mealIndex}`).textContent = `≈ ${mealCalories(meal)} kcal`;
+  updateAnalyzeButton();
+});
+
+$("policy-list").addEventListener("change", updateAnalyzeButton);
+
+document.addEventListener("keydown", (event) => {
+  if (event.ctrlKey && event.key === "Enter") analyze();
+});
+
+/* =====================================================================
+   8. START
+   ===================================================================== */
+$("logo").innerHTML = icon("fork", 22);
+$("theme-button").innerHTML = icon("moon");
+if (window.matchMedia("(prefers-color-scheme: dark)").matches) document.documentElement.classList.add("dark");
+updateAnalyzeButton();
+loadStartupData();
+</script>
+</body>
+</html>

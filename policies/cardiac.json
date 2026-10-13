@@ -1,0 +1,28 @@
+{
+  "id": "cardiac",
+  "name": "Cardiac Diet (Heart-Healthy)",
+  "version": "1.0",
+  "description": "Illustrative cardiac diet: low saturated fat and sodium. Verify against your institution's diet manual.",
+  "rules": [
+    {"id": "CD-SATFAT", "title": "Saturated fat below 7% of daily calories", "scope": "day",
+     "type": "pct_kcal_max", "nutrient": "sat_fat_g", "max": 7, "severity": "error",
+     "source": "AHA dietary recommendation: saturated fat under 6-7% of calories for heart health",
+     "remedy": "Replace cheese, bacon and fatty meats with fish, legumes or lean poultry."},
+    {"id": "CD-NA-DAY", "title": "Daily sodium at most 2,000 mg", "scope": "day",
+     "type": "nutrient_max", "nutrient": "sodium_mg", "max": 2000, "severity": "error",
+     "source": "AHA: ideal limit 1,500 mg/day, no more than 2,300 mg/day",
+     "remedy": "Use fresh ingredients and avoid canned or cured foods."},
+    {"id": "CD-ITEM-PROC", "title": "No processed meats", "scope": "item",
+     "type": "tag_forbidden", "tags": ["processed_meat"], "severity": "error",
+     "source": "AHA: limit processed meats (high in sodium and saturated fat)",
+     "remedy": "Choose skinless poultry, fish or plant proteins."},
+    {"id": "CD-FIBER", "title": "Fibre at least 14 g per 1,000 kcal", "scope": "day",
+     "type": "per_1000kcal_min", "nutrient": "fiber_g", "min": 14, "severity": "warning",
+     "source": "Dietary Guidelines for Americans: 14 g fibre per 1,000 kcal",
+     "remedy": "Add whole grains, legumes, vegetables or fruit."},
+    {"id": "CD-FISH", "title": "Include fish in the plan (at least 100 g/day)", "scope": "day",
+     "type": "tag_min_grams", "tags": ["fish"], "min": 100, "severity": "warning",
+     "source": "AHA: eat fish, especially fatty fish, at least twice a week",
+     "remedy": "Add a salmon portion to lunch or dinner."}
+  ]
+}

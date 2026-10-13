@@ -1,0 +1,12 @@
+{
+  "id": "gluten_free",
+  "name": "Gluten-Free Diet",
+  "version": "1.0",
+  "description": "Illustrative gluten-free policy for coeliac disease. Requires the 'gluten' tag on foods (see foods.py patch).",
+  "rules": [
+    {"id": "GF-ITEM", "title": "No gluten-containing foods (wheat, barley, rye)", "scope": "item",
+     "type": "tag_forbidden", "tags": ["gluten"], "severity": "error",
+     "source": "Coeliac disease management: strict lifelong avoidance of wheat, barley and rye",
+     "remedy": "Use rice, certified gluten-free oats, potatoes, corn or other naturally gluten-free foods."}
+  ]
+}
